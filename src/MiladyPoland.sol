@@ -23,11 +23,9 @@ error YouMustOwnTheGenesisToken();
 
 
 
-import "erc721a/contracts/extensions/ERC721AQueryable.sol";
-import "solady/src/utils/SafeTransferLib.sol";
-//import "closedsea/src/OperatorFilterer.sol";
-import "solmate/src/auth/Owned.sol"; 
-import "./Milady.sol";
+import "lib/ERC721A/contracts/extensions/ERC721AQueryable.sol";
+import "lib/solady/src/utils/SafeTransferLib.sol";
+import "lib/solmate/src/auth/Owned.sol"; 
 import "./ECDSA.sol";
 import "./LibString.sol";
 
