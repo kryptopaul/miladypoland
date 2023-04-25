@@ -24,7 +24,6 @@ import "lib/solmate/src/auth/Owned.sol";
 import "lib/solady/src/utils/LibString.sol";
 
 contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
-
     uint8 public saleState;
     uint8 private baseURILocked = 1;
     uint8 public constant SALE_STATE_CLOSED = 0;
@@ -41,7 +40,8 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
     uint256 public constant MaxPaidPerWallet = 5;
     uint256 public constant PRICE_UNIT = 0.0003 ether;
 
-    address constant MILADY_TOKEN_CONTRACT = 0x5Af0D9827E0c53E4799BB226655A1de152A425a5;
+    address constant MILADY_TOKEN_CONTRACT =
+        0x5Af0D9827E0c53E4799BB226655A1de152A425a5;
     address public signer;
 
     string private _baseTokenURI;
@@ -50,12 +50,13 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
     bool public paused;
 
     constructor(
-        address receiver,
-        bytes32 message
-    ) ERC721A("MiladyPoland", "MPL") {
+        address receiver
+    )
+        // bytes32 message (odkomentowac potem)
+        ERC721A("MiladyPoland", "MPL")
+    {
         _mintERC2309(receiver, RESERVED_NFTS);
     }
-
 
     function _startTokenId() internal view virtual override returns (uint256) {
         return 1;
@@ -78,10 +79,40 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
     //uint256 friendsAndFamilyBalance = IERC721(0x5Af0D9827E0c53E4799BB226655A1de152A425a5).balanceOf(_to);
     //require(friendsAndFamilyBalance > 0 || friendsAndFamilyBalance2 > 0,
 
-    function MiladyMint(
-        uint256 quantity
-    ) external payable {
+    // external zeby dzialalo w testach, potem trzeba zmienic!!
+
+    function getMiladyBalance(address _address) internal view returns (uint256 miladyBalance) {
+        assembly {
+            // Prepare calldata for the staticcall
+            mstore(0x0, shl(224, 0x70a08231)) // Shift the function selector to the left by 224 bits
+            mstore(0x4, _address) // Store the msg.sender (caller) at position 0x4
+
+            // Perform the staticcall
+            let success := staticcall(
+                gas(),
+                0x5Af0D9827E0c53E4799BB226655A1de152A425a5,
+                0x0,
+                0x24,
+                0x0,
+                0x20
+            )
+
+            // Check if the call was successful
+            if iszero(success) {
+                revert(0, 0)
+            }
+
+            // Retrieve the result and store it in miladyBalance
+            miladyBalance := mload(0x0)
+        }
+
+        return miladyBalance;
+    }
+
+    function MiladyMint(uint256 quantity) external payable {
         unchecked {
+            if (getMiladyBalance(msg.sender) == 0)
+                revert NotYou();
             if (_totalMinted() + quantity > maxMiladyMint + RESERVED_NFTS)
                 revert OutOfStock();
             if (saleState != SALE_STATE_FREE || saleState == 0)
@@ -93,33 +124,6 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
         }
 
         _mint(msg.sender, quantity);
-    }
-
-    function balanceOfSenderInAnotherContract() internal view returns (uint256 miladybalance) {
-        
-        assembly {
-            let ptr := mload(0x40) // Get a free memory pointer
-            mstore(ptr, 0x70a08231) // Store the function selector (first 4 bytes of the hash of "balanceOf(address)")
-            mstore(add(ptr, 0x04), caller()) // Store the `msg.sender` address after the function selector
-
-            // Perform the external call to the target contract
-            let success := staticcall(
-                gas(),
-                MILADY_TOKEN_CONTRACT,
-                ptr, // Input pointer
-                0x24, // Input size (4 bytes for the function selector + 32 bytes for the address)
-                ptr, // Use the same memory pointer for output
-                0x20 // Output size (32 bytes for the uint256 balance)
-            )
-
-            if iszero(success) {
-                revert(0, 0) // Revert if the external call failed
-            }
-
-            miladybalance := mload(ptr) // Load the balance from the returned value
-        }
-
-        return miladybalance;
     }
 
     function mint(
@@ -136,7 +140,6 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
         }
         _mint(msg.sender, quantity);
     }
-
 
     modifier requireExactPayment(uint16 priceUnits, uint256 quantity) {
         unchecked {
@@ -159,7 +162,6 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
 
     //@dev URI functions.
 
-
     function setBaseURI(string calldata baseURI) external onlyOwner {
         if (baseURILocked == 2) revert BaseURIIsLocked();
         _baseTokenURI = baseURI;
@@ -168,7 +170,6 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
     function lockBaseURI() external onlyOwner {
         baseURILocked = 2;
     }
-
 
     function setSaleState(uint8 value) external onlyOwner {
         if (saleState != 0) {
@@ -181,6 +182,4 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
         require(value != address(0), "Signer must not be the zero address.");
         signer = value;
     }
-
-    
 }
