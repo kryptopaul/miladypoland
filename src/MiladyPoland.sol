@@ -42,7 +42,6 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
 
     address constant MILADY_TOKEN_CONTRACT =
         0x5Af0D9827E0c53E4799BB226655A1de152A425a5;
-    address public signer;
 
     string private _baseTokenURI;
     string private _contractURI;
@@ -85,7 +84,7 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
         assembly {
             // Prepare calldata for the staticcall
             mstore(0x0, shl(224, 0x70a08231)) // Shift the function selector to the left by 224 bits
-            mstore(0x4, _address) // Store the msg.sender (caller) at position 0x4
+            mstore(0x4, _address) // Store the _address at position 0x4
 
             // Perform the staticcall
             let success := staticcall(
@@ -176,10 +175,5 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
             require(maxSupply != 0, "max supply not set");
         }
         saleState = value;
-    }
-
-    function setSigner(address value) external onlyOwner {
-        require(value != address(0), "Signer must not be the zero address.");
-        signer = value;
     }
 }

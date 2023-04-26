@@ -8,7 +8,7 @@ import "../src/MiladyPoland.sol";
 
 contract MiladyPolandTest is Test {
     MiladyPoland public miladyPoland;
-    address public randomUser = address(0x5E11E1);
+    // address public randomUser = address(0x5E11E1);
     address public kryptopaul = 0x60D4496FfaeF491e6BE88D55dcB511F513390486;
 
     function setUp() public {
@@ -26,6 +26,7 @@ contract MiladyPolandTest is Test {
         assertEq(5, receiverBalance);
     }
 
+    // Milady Mint section
     function test_MiladyHolderCanMint() public {
         vm.prank(kryptopaul);
         miladyPoland.MiladyMint(1);
@@ -46,7 +47,11 @@ contract MiladyPolandTest is Test {
 
     function test_NotMiladyHolderCantMint() public {
         vm.expectRevert();
-        vm.prank(randomUser);
         miladyPoland.MiladyMint(1);
+    }
+
+    // Normal mint section
+    function test_userCanMint() public {
+        miladyPoland.mint{value: 2 ether}(1);
     }
 }
