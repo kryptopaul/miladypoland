@@ -16,7 +16,7 @@ import "forge-std/Test.sol";
 
 contract Cebula is Owned(msg.sender), ERC721AQueryable {
     address constant MILADYPOLAND_CONTRACT =
-        0x5615dEB798BB3E4dFa0139dFa1b3D433Cc23b72f;
+        0xF4E4eF564dEA63fD007102B335338cBe0869Bc01;
 
     constructor(address receiver) ERC721A("Cebula", "PLN") {
         _mintERC2309(receiver, 2);

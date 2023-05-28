@@ -45,14 +45,24 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
         0x5Af0D9827E0c53E4799BB226655A1de152A425a5;
 
     address constant CEBULA_TOKEN_CONTRACT =
-        0x2e234DAe75C793f67A35089C9d99245E1C58470b;
+        0x2c988006cE2bCE9Fee125D6a98863b7eB6B8657A;
 
-    string private _baseTokenURI;
     mapping(address => string) public githubAccounts;
+    string private baseURI;
 
     // 646576656c6f706d656e74
     constructor(address receiver) ERC721A("MiladyPoland", "MPL") {
         _mintERC2309(receiver, RESERVED_NFTS);
+    }
+
+    function _baseURI()
+        internal
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        return baseURI;
     }
 
     function _startTokenId() internal view virtual override returns (uint256) {
@@ -189,9 +199,9 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
 
     //@dev URI functions.
 
-    function setBaseURI(string calldata baseURI) external onlyOwner {
+    function setBaseURI(string calldata _uri) external onlyOwner {
         if (baseURILocked == 2) revert BaseURIIsLocked();
-        _baseTokenURI = baseURI;
+        baseURI = _uri;
     }
 
     function lockBaseURI() external onlyOwner {
