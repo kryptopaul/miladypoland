@@ -1,21 +1,15 @@
-// SPDX-License-Identifier: MIT
+/// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.16;
 
 error WalletLimitExceeded();
 error NoMoney();
 error PriceMustbemultipleofunit();
-error OhYouSneaky();
 error FreeSaleNoMore();
 error GeneralMintClosed();
-error TooMany();
 error Locked();
 error OutOfStock();
 error NotYou();
-error NotTokenOwner();
-error gowno();
-error chujciwdupe();
-error YouMustOwnTheGenesisToken();
 error BaseURIIsLocked();
 error WrongPassword();
 
@@ -23,9 +17,12 @@ import "lib/ERC721A/contracts/extensions/ERC721AQueryable.sol";
 import "lib/solady/src/utils/SafeTransferLib.sol";
 import "lib/solmate/src/auth/Owned.sol";
 import "lib/solady/src/utils/LibString.sol";
+import "lib/solady/src/utils/ECDSA.sol";
 import "forge-std/Test.sol";
 
 contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
+    using ECDSA for bytes32;
+
     uint8 public saleState;
     uint8 private baseURILocked = 1;
     uint8 public constant SALE_STATE_CLOSED = 0;
@@ -41,6 +38,8 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
     uint256 public constant MaxPaidPerWallet = 5;
     uint256 public constant PRICE_UNIT = 0.0003 ether;
 
+    address public signer;
+
     address constant MILADY_TOKEN_CONTRACT =
         0x5Af0D9827E0c53E4799BB226655A1de152A425a5;
 
@@ -50,18 +49,11 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
     mapping(address => string) public githubAccounts;
     string private baseURI;
 
-    // 646576656c6f706d656e74
     constructor(address receiver) ERC721A("MiladyPoland", "MPL") {
         _mintERC2309(receiver, RESERVED_NFTS);
     }
 
-    function _baseURI()
-        internal
-        view
-        virtual
-        override
-        returns (string memory)
-    {
+    function _baseURI() internal view virtual override returns (string memory) {
         return baseURI;
     }
 
@@ -147,18 +139,15 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
         return nftBalance;
     }
 
-    function MiladyMint(uint256 quantity) external payable {
+    function MiladyMint(
+        uint256 quantity,
+        bytes calldata signature
+    ) external payable requireSignature(signature) {
         unchecked {
-            if (getNFTBalance(msg.sender, MILADY_TOKEN_CONTRACT) < 1)
-                revert NotYou();
             if (_totalMinted() + quantity > maxMiladyMint + RESERVED_NFTS)
                 revert OutOfStock();
             if (saleState != SALE_STATE_FREE || saleState == 0)
                 revert FreeSaleNoMore();
-            if (
-                (_numberMinted(msg.sender) - _getAux(msg.sender)) + quantity >
-                MaxFreePerWallet
-            ) revert WalletLimitExceeded();
         }
 
         _mint(msg.sender, quantity);
@@ -213,6 +202,20 @@ contract MiladyPoland is Owned(msg.sender), ERC721AQueryable {
             require(maxSupply != 0, "max supply not set");
         }
         saleState = value;
+    }
+
+    modifier requireSignature(bytes calldata signature) {
+        require(
+            keccak256(abi.encode(msg.sender)).toEthSignedMessageHash().recover(
+                signature
+            ) == signer,
+            "Invalid signature."
+        );
+        _;
+    }
+
+    function setSigner(address value) external onlyOwner {
+        signer = value;
     }
 
     function setGitHubAccount(

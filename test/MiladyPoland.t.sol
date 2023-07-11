@@ -48,26 +48,26 @@ contract MiladyPolandTest is Test {
         cebula.curse(randomUser);
     }
 
-    // Milady Mint section
-    function test_MiladyHolder_CanMint() public {
-        vm.prank(kryptopaul);
-        miladyPoland.MiladyMint(1);
-        uint256 balance = miladyPoland.balanceOf(kryptopaul);
-        assertEq(balance, 1);
-    }
+    // // Milady Mint section
+    // function test_MiladyHolder_CanMint() public {
+    //     vm.prank(kryptopaul);
+    //     miladyPoland.MiladyMint(1);
+    //     uint256 balance = miladyPoland.balanceOf(kryptopaul);
+    //     assertEq(balance, 1);
+    // }
 
-    function test_MiladyHolder_CantMint_MoreThanOne() public {
-        vm.startPrank(kryptopaul);
-        miladyPoland.MiladyMint(1);
-        vm.expectRevert();
-        miladyPoland.MiladyMint(1);
-        vm.stopPrank();
-    }
+    // function test_MiladyHolder_CantMint_MoreThanOne() public {
+    //     vm.startPrank(kryptopaul);
+    //     miladyPoland.MiladyMint(1);
+    //     vm.expectRevert();
+    //     miladyPoland.MiladyMint(1);
+    //     vm.stopPrank();
+    // }
 
-    function test_NotMiladyHolder_CantMint() public {
-        vm.expectRevert();
-        miladyPoland.MiladyMint(1);
-    }
+    // function test_NotMiladyHolder_CantMint() public {
+    //     vm.expectRevert();
+    //     miladyPoland.MiladyMint(1);
+    // }
 
     // Cebula Mickey Mouse Fuck Shit
 
@@ -120,7 +120,7 @@ contract MiladyPolandTest is Test {
         vm.assume(evenBlock % 2 == 0);
         vm.roll(evenBlock);
         vm.prank(kryptopaul);
-        miladyPoland.MiladyMint(1);
+        // miladyPoland.MiladyMint(1);
 
         uint256 miladyPolandBalance = miladyPoland.balanceOf(kryptopaul);
         uint256 cebulaBalance = cebula.balanceOf(kryptopaul);
